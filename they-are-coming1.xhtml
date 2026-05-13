@@ -60,6 +60,13 @@
       `${buildUrl}/zombieshooterdone.wasm.br.part3`
     ];
 
+    const container = document.querySelector("#unity-container");
+    const canvas = document.querySelector("#unity-canvas");
+    const loadingCover = document.querySelector("#loading-cover");
+    const progressBarEmpty = document.querySelector("#unity-progress-bar-empty");
+    const progressBarFull = document.querySelector("#unity-progress-bar-full");
+    const spinner = document.querySelector('.spinner');
+
     async function fetchAndMergeWasm() {
       const parts = await Promise.all(wasmParts.map(url =>
         fetch(url).then(r => {
@@ -83,9 +90,11 @@
       const script = document.createElement("script");
       script.src = loaderUrl;
       script.onload = () => {
+        progressBarEmpty.style.display = "";
+        spinner.style.display = "none";
+
         createUnityInstance(document.querySelector("#unity-canvas"), config, (progress) => {
-          const loader = document.querySelector("#unity-loading-bar");
-          if (loader) loader.style.width = `${progress * 100}%`;
+          progressBarFull.style.width = `${progress * 100}%`;
         }).then((unityInstance) => {
           myGameInstance = unityInstance;
           document.querySelector("#loading-cover").style.display = "none";
@@ -94,14 +103,12 @@
         });
       };
       document.body.appendChild(script);
+    }).catch(err => {
+      console.error("Failed to load WASM parts:", err);
+      spinner.style.display = "none";
+      progressBarEmpty.innerHTML = "<p style='color:white;text-align:center'>Failed to load game. Please refresh.</p>";
+      progressBarEmpty.style.display = "";
     });
-
-    const container = document.querySelector("#unity-container");
-    const canvas = document.querySelector("#unity-canvas");
-    const loadingCover = document.querySelector("#loading-cover");
-    const progressBarEmpty = document.querySelector("#unity-progress-bar-empty");
-    const progressBarFull = document.querySelector("#unity-progress-bar-full");
-    const spinner = document.querySelector('.spinner');
 
     const canFullscreen = (function () {
       for (const key of [
@@ -228,5 +235,5 @@
     });
   ]]></script>
 
-<script src="Build/zombieshooterdone.loader.js"></script><script src="Build/zombieshooterdone.framework.js"></script></body>
+</body>
 </html>
